@@ -48,7 +48,7 @@ public class SecurityConfig {
                 .formLogin().disable() // 👈 disables default form login too
                 .authorizeHttpRequests()
                 .antMatchers("/api/**/auth/**").permitAll()
-                .antMatchers("/", "/login.html", "/chat.html", "/dashboard.html").permitAll()
+                .antMatchers("/", "/login.html", "/chat.html", "/dashboard.html", "/login", "/chat", "/dashboard", "/health").permitAll()
                 .antMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
                 .antMatchers("/api/**/admin/**").hasRole("ADMIN")
                 .antMatchers("/ws/**", "/ws/info/**", "/app/**", "/topic/**").permitAll()
