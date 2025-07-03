@@ -56,7 +56,7 @@ A secure, real-time 1-on-1 chat application built with **Spring Boot**, **WebSoc
    git clone https://github.com/Pranav-Thakur/chatapp.git
    cd chat-app
    run mysql and mongodb instance locally and put that in secret.properties
-   mvn clean install -DskipTest
+   mvn clean install -DskipTests
    ./mvnw spring-boot:run
    Visit: http://localhost:8080/login.html
    ```
