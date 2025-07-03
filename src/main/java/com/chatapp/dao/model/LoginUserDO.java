@@ -12,8 +12,8 @@ import java.util.UUID;
 
 @Entity
 @Data
-@Table(name = "login_user", indexes = {
-    @Index(name = "idx_login_user_phone", columnList = "phone")
+@Table(name = "chatlogin_user", indexes = {
+    @Index(name = "idx_chatlogin_user_phone", columnList = "phone")
 })
 public class LoginUserDO extends AuditableBaseDO {
     @Id
