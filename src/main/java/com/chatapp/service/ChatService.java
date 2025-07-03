@@ -1,19 +1,15 @@
 package com.chatapp.service;
 
 import com.chatapp.model.Message;
-import org.springframework.stereotype.Service;
+import com.chatapp.payload.response.UserHistoryChatsResponse;
+import com.chatapp.payload.response.UserListChatsResponse;
+import lombok.NonNull;
 
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
-@Service
-public class ChatService {
-    private Map<String, List<Message>> chatStore = new HashMap<>();
-
-    public void sendMessage(Message message) {
-        chatStore.computeIfAbsent(message.getReceiverId(), k -> new ArrayList<>()).add(message);
-    }
-
-    public List<Message> getChatHistory(String chatId) {
-        return chatStore.getOrDefault(chatId, new ArrayList<>());
-    }
+public interface ChatService {
+    Message saveMessage(@NonNull Message message);
+    List<UserListChatsResponse> fetchListChats(@NonNull UUID userId);
+    List<UserHistoryChatsResponse> fetchListChats(@NonNull UUID currentUserId, @NonNull UUID otherUserId);
 }

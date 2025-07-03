@@ -2,22 +2,14 @@ package com.chatapp.model;
 
 import lombok.Data;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import java.util.UUID;
 
-@Entity
 @Data
 public class Message {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long messageId;
-    private String senderId;
-    private String receiverId;
+    private String messageId;
+    private UUID senderId;
+    private UUID receiverId;
     private String content;
     private long timestamp;
     private boolean isRead;
-
-    // getters and setters
 }

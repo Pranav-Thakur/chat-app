@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat Dashboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #e9eff5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 15px;
+            padding: 30px 25px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h2 {
+            margin: 0;
+            color: #2c3e50;
+        }
+
+        .chat-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .chat-item {
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-bottom: 1px solid #ddd;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            cursor: pointer;
+            align-items: center;
+            justify-content: space-between;
+            display: flex;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .chat-item:hover {
+            background: #dceeff;
+            transform: translateY(-2px);
+        }
+
+        .chat-left {
+            flex-grow: 1;
+        }
+
+        .chat-right {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+        }
+
+        .badge {
+            background-color: #dc3545;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .chat-item span {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .chat-item small {
+            color: #7f8c8d;
+        }
+
+        #newChatBtn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            background-color: #27ae60;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #newChatBtn:hover {
+            background-color: #219150;
+        }
+    </style>
+    <script src="/js/auth.js" type="text/javascript"></script>
+    <script src="/js/constants.js" type="text/javascript"></script>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>Welcome, <span id="username">User</span></h2>
+    </div>
+
+    <ul class="chat-list" id="chatList">
+        <!-- Chat list goes here -->
+    </ul>
+
+    <button id="newChatBtn">+ Start New Chat</button>
+</div>
+
+<script>
+
+    document.getElementById("newChatBtn").addEventListener("click", async () => {
+        const phone = prompt("Enter 10-digit phone number:");
+        if (phone && phone.match(/^\d{10}$/)) {
+            let userId = AuthService.getItemWithExpiry(AuthConstants.STORAGE_KEYS.USER_ID);
+            const res = await AuthService.apiFetch(AuthConstants.API.FIND.replace("{userId}", userId) + "?phone=" + phone);
+
+            if (!res.ok) {
+                console.log("Data: " + peerUser);
+                alert("user with phone given, not found. Try other");
+                return;
+            }
+
+            const peerUser = await res.json();
+            AuthService.setItemWithExpiry(AuthConstants.STORAGE_KEYS.PEER_ID, peerUser.userId);
+            AuthService.setItemWithExpiry(AuthConstants.STORAGE_KEYS.PEER_USER_DATA, JSON.stringify(peerUser));
+
+            setTimeout(() => {
+                window.location.href = `chat.html`;
+            }, 1000); // 1 second delay
+        } else {
+            alert("❗ not a phone number");
+        }
+    });
+
+
+    async function callApiCheckSessionForValidity(userId) {
+        let lastSessionApiCall = AuthService.getItemWithExpiry(AuthConstants.STORAGE_KEYS.LAST_CHECK_SESSION_API_CALL);
+        if (lastSessionApiCall) {
+            // valid call has already happened
+            return;
+        }
+
+        const res = await AuthService.apiFetch(AuthConstants.API.CHECK_SESSION.replace("{userId}", userId));
+        const sessionCheckData = await res.json();
+
+        if (!res.ok) {
+            // we can ignore the error here
+            console.info("check session failed. data: " + sessionCheckData);
+        } else {
+            // Token valid, redirect to chat
+            AuthService.setItemWithExpiry(AuthConstants.STORAGE_KEYS.LAST_CHECK_SESSION_API_CALL, true, AuthConstants.TTL.CHECK_SESSION);
+            AuthService.setItemWithExpiry(AuthConstants.STORAGE_KEYS.CURRENT_USER_DATA, JSON.stringify(sessionCheckData));
+        }
+    }
+
+    window.onload = async () => {
+        try {
+            let stringCurrentUserData = AuthService.getItemWithExpiry(AuthConstants.STORAGE_KEYS.CURRENT_USER_DATA);
+            let currentUserData = JSON.parse(stringCurrentUserData);
+
+            if(currentUserData && currentUserData.name) {
+                document.getElementById("username").innerHTML = currentUserData.name;
+            }
+        } catch (e) {
+            console.error("Failed to parse user data", e);
+            // or fallback logic
+        }
+
+        try {
+            let userId = AuthService.getItemWithExpiry(AuthConstants.STORAGE_KEYS.USER_ID);
+            await callApiCheckSessionForValidity(userId);
+
+            const res = await AuthService.apiFetch(AuthConstants.API.CHAT_LIST.replace("{userId}", userId));
+            const chats = await res.json();
+
+            if (!res.ok) {
+                alert("Chats not fetched, try refreshing.");
+                return;
+            }
+
+            const listDiv = document.getElementById("chatList");
+            listDiv.innerHTML = "";
+
+            chats.forEach(chat => {
+                const chatItem = document.createElement("li");
+                chatItem.className = "chat-item";
+                chatItem.innerHTML = `
+                    <div class="chat-left">
+                        <strong>${chat.name}</strong> (${chat.phone})<br>
+                        <span>${chat.lastMessage}</span><br>
+                        <small>${new Date(chat.timestamp).toLocaleString()}</small>
+                    </div>
+                    <div class="chat-right">
+                        ${chat.unreadCount > 0 ? `<span class="badge">${chat.unreadCount}</span>` : ""}
+                    </div>
+                `;
+
+                chatItem.onclick = async () => {
+                    AuthService.setItemWithExpiry(AuthConstants.STORAGE_KEYS.PEER_ID, chat.userId);
+                    let userId = AuthService.getItemWithExpiry(AuthConstants.STORAGE_KEYS.USER_ID);
+                    const res = await AuthService.apiFetch(AuthConstants.API.FIND.replace("{userId}", userId) + "?peerId=" + chat.userId);
+                    const peerUser = await res.json();
+
+                    if (!res.ok) {
+                        console.log("Data: " + peerUser);
+                        // no issues as off now, lazy loading later can happen
+                    } else {
+                        AuthService.setItemWithExpiry(AuthConstants.STORAGE_KEYS.PEER_USER_DATA, JSON.stringify(peerUser));
+                    }
+
+                    setTimeout(() => {
+                        window.location.href = `/chat.html`;
+                    }, 1000); // 1 second delay
+                };
+
+                listDiv.appendChild(chatItem);
+            });
+        } catch (e) {
+            console.error("Error in dashboard", e);
+        }
+    };
+
+</script>
+
+</body>
+</html>

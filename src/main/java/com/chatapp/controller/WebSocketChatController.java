@@ -1,16 +1,26 @@
 package com.chatapp.controller;
 
 import com.chatapp.model.Message;
+import com.chatapp.service.ChatService;
+import lombok.NonNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 @Controller
 public class WebSocketChatController {
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private ChatService chatService;
+
     @MessageMapping("/chat.send")
-    @SendTo("/topic/messages")
-    public Message sendMessage(Message message) {
-        return message;
+    public void sendMessage(@NonNull Message message) {
+        message = chatService.saveMessage(message);
+        // Then send to specific receiver topic
+        messagingTemplate.convertAndSend("/topic/messages/" + message.getReceiverId(), message);
     }
 }

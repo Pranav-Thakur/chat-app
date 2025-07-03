@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Pro's Chat App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #eef2f7;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #chatContainer {
+            background: #ffffff;
+            width: 90%;
+            max-width: 600px;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            position: relative;
+        }
+
+        h2 {
+            margin: 0;
+            text-align: center;
+            color: #333;
+        }
+
+        #logoutBtn {
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            background: #dc3545;
+            color: #fff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #logoutBtn:hover {
+            background: #c82333;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 12px 0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        #messageBox {
+            height: 250px;
+            overflow-y: auto;
+            background: #f0f0f0;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 12px;
+            border: 1px solid #ddd;
+        }
+
+        #sendBtn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            background: #28a745;
+            color: white;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        #sendBtn:hover {
+            background: #218838;
+        }
+
+        .message-sent {
+            text-align: right;
+            color: #155724;
+            margin: 5px;
+        }
+
+        .message-received {
+            text-align: left;
+            color: #004085;
+            margin: 5px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <script src="/js/auth.js" type="text/javascript"></script>
+    <script src="/js/constants.js" type="text/javascript"></script>
+</head>
+<body>
+
+<div id="chatContainer">
+    <h2><span id="username">User</span></h2>
+    <button id="logoutBtn" onclick="AuthService.logoutAndRedirect()">Logout</button>
+
+    <input type="text" id="receiverPhone"  placeholder="📱 Enter receiver's phone number" maxlength="10" style="display: none;" />
+    <div id="messageBox"></div>
+    <input type="text" id="messageInput" placeholder="💬 Type your message..." />
+    <button id="sendBtn" onclick="sendMessage()">Send</button>
+</div>
+
+<script>
+    let stompClient = null;
+    let otherPeerData = null;
+    let currentUserData = null;
+
+    function appendMessage(content, isSentByUser) {
+        const messageBox = document.getElementById('messageBox');
+        const msgDiv = document.createElement('div');
+        msgDiv.textContent = content;
+        msgDiv.className = isSentByUser ? 'message-sent' : 'message-received';
+        messageBox.appendChild(msgDiv);
+        messageBox.scrollTop = messageBox.scrollHeight;
+    }
+
+    function sendMessageOverWS(apiName, messageBody) {
+        if (!stompClient || !stompClient.connected) {
+            console.warn("WebSocket not connected. Reconnecting...");
+            connectWebSocket(() => {
+                stompClient.send(apiName, {}, messageBody);
+            });
+        } else {
+            stompClient.send(apiName, {}, messageBody);
+        }
+    }
+
+    function sendMessage() {
+        const receiver = document.getElementById("receiverPhone").value;
+        const message = document.getElementById("messageInput").value;
+
+        if (!receiver || !message) {
+            alert("Please enter receiver's phone and message");
+            return;
+        }
+
+        let messageBody = JSON.stringify({
+            receiverId: AuthService.getItemWithExpiry(AuthConstants.STORAGE_KEYS.PEER_ID),
+            senderId: AuthService.getItemWithExpiry(AuthConstants.STORAGE_KEYS.USER_ID),
+            content: message,
+            timestamp: Date.now(),
+            isRead: false
+        });
+
+        appendMessage("You: " + message, true);
+        document.getElementById("messageInput").value = "";
+        sendMessageOverWS(AuthConstants.API.SEND_MSG, messageBody);
+    }
+
+    function connectWebSocket(onConnectedCallback) {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = window.location.host;
+        const socket = new WebSocket(`${protocol}//${host}/ws`);
+
+        let userId = AuthService.getItemWithExpiry(AuthConstants.STORAGE_KEYS.USER_ID);
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+            stompClient.subscribe(AuthConstants.API.RECEIVE_MSG.replace("{userId}", userId), function (messageOutput) {
+                const msg = JSON.parse(messageOutput.body);
+                appendMessage(otherPeerData?.name + ": " + msg.content, false);
+                // Send delivery ack
+                // sendMessageOverWS(AuthConstants.API.DELIVERY_ACK, msg);
+            });
+
+            if (onConnectedCallback) {
+                onConnectedCallback(); // Safe to send message now
+            }
+        }, function (error) {
+            console.error("WebSocket connection failed:", error);
+        });
+    }
+
+    async function loadHistoryChats() {
+        let userId = AuthService.getItemWithExpiry(AuthConstants.STORAGE_KEYS.USER_ID);
+        let otherId = AuthService.getItemWithExpiry(AuthConstants.STORAGE_KEYS.PEER_ID);
+        const res = await AuthService.apiFetch(AuthConstants.API.CHAT_HISTORY.replace("{userId}", userId).replace("{otherId}", otherId));
+        const messages = await res.json();
+
+        if (!res.ok) {
+            console.log("no older chats retrieved : " + JSON.stringify(messages));
+            return;
+        }
+
+        messages.forEach(msg => {
+            appendMessage(
+                msg.senderId === userId ? "You: " + msg.message : msg.name + ": " + msg.message,
+                msg.senderId !== userId
+            );
+        });
+    }
+
+    function loadUserDataAvailable() {
+        try {
+            let stringCurrentUserData = AuthService.getItemWithExpiry(AuthConstants.STORAGE_KEYS.CURRENT_USER_DATA);
+            currentUserData = JSON.parse(stringCurrentUserData);
+
+            let stringPeerUserData = AuthService.getItemWithExpiry(AuthConstants.STORAGE_KEYS.PEER_USER_DATA);
+            otherPeerData = JSON.parse(stringPeerUserData);
+
+            document.getElementById("username").innerHTML = otherPeerData.name;
+            document.getElementById("receiverPhone").value = otherPeerData.phone;
+        } catch (e) {
+            console.error("Failed to parse user data:", e.message);
+            currentUserData = null; // or fallback logic
+            otherPeerData = null;
+        }
+    }
+
+    async function callApiCheckSessionForValidity(userId) {
+        let lastSessionApiCall = AuthService.getItemWithExpiry(AuthConstants.STORAGE_KEYS.LAST_CHECK_SESSION_API_CALL);
+        if (lastSessionApiCall) {
+            // valid call has already happened
+            return;
+        }
+
+        const res = await AuthService.apiFetch(AuthConstants.API.CHECK_SESSION.replace("{userId}", userId));
+        if (res.ok) {
+            // Token valid, redirect to chat
+            const sessionCheckData = await res.json();
+            AuthService.setItemWithExpiry(AuthConstants.STORAGE_KEYS.LAST_CHECK_SESSION_API_CALL, true, AuthConstants.TTL.CHECK_SESSION);
+            AuthService.setItemWithExpiry(AuthConstants.STORAGE_KEYS.CURRENT_USER_DATA, JSON.stringify(sessionCheckData));
+        }
+    }
+
+    document.getElementById("messageInput").addEventListener("keydown", function(event) {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault(); // prevent form submit if inside <form>
+            if (this.value.trim() !== "")
+                sendMessage(); // fire button click
+        }
+    });
+
+    // input box to grow as the user types
+    document.getElementById("messageInput").addEventListener("input", function () {
+        this.style.height = "auto";
+        this.style.height = (this.scrollHeight) + "px";
+    });
+
+    window.onload = async () => {
+        try {
+            loadUserDataAvailable();
+            let userId = AuthService.getItemWithExpiry(AuthConstants.STORAGE_KEYS.USER_ID);
+            await callApiCheckSessionForValidity(userId);
+
+            await loadHistoryChats();
+            connectWebSocket();
+
+        } catch (e) {
+            console.error(e);
+            alert("Please login again.");
+            await AuthService.logoutAndRedirect();
+        }
+    };
+</script>
+
+</body>
+</html>
