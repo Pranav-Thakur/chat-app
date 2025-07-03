@@ -310,6 +310,11 @@
     }
 
     async function callApiCheckSessionForValidity(userId, redirectIfOk = true) {
+        if (!userId) {
+            console.info("userId empty.");
+            return;
+        }
+
         const sessionChecked = AuthService.getItemWithExpiry(AuthConstants.STORAGE_KEYS.LAST_CHECK_SESSION_API_CALL);
         if (sessionChecked) {
             // no need to call api

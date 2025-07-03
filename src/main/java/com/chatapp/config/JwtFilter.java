@@ -42,16 +42,17 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
+        String uri = request.getRequestURI();
+        log.info("JwtFilter invoked for URI: " + uri);
         // 🥠 Get JWT from Cookie
         String jwt = ChatAppUtil.extractTokenFromCookies(request.getCookies());
         String sessionId = null;
-        log.info("JwtFilter invoked for URI: " + request.getRequestURI());
         try {
             sessionId = jwtUtil.extractSubjectForFilter(jwt);
             if (!loginUserRepoService.existsBySessionIdAndStatus(UUID.fromString(sessionId), LoginUserStatus.OTP_VERIFIED))
                 sessionId = null;
         } catch (Exception e) {
-            log.error("Error : " + e.getMessage(), e);
+            log.error("Error : " + e.getMessage() + " " + e.getCause());
             // ignore error
         }
 
