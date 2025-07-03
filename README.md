@@ -55,12 +55,30 @@ A secure, real-time 1-on-1 chat application built with **Spring Boot**, **WebSoc
    ```bash
    git clone https://github.com/Pranav-Thakur/chatapp.git
    cd chat-app
+   run mysql and mongodb instance locally and put that in secret.properties
+   mvn clean install -DskipTest
+   ./mvnw spring-boot:run
+   Visit: http://localhost:8080/login.html
    ```
+
+### 📡 Deployment Notes
+- Ensure HTTPS (JWT in cookies won’t work over http)
+- Use SameSite=Strict and Secure=true for cookies
+- JWT validation is stateless — works fine in multi-instance deployments
+- Render/Heroku/Nginx reverse proxy should support WebSocket upgrade
+
+
+### 🎯 Roadmap (Suggestions)
+- ✅ Real-time chat
+- ⏳ Group chats
+- 📷 Image/file support
+- 🧠 Typing indicators
+- 🔔 Push notifications
 
 
 ---
 
-## 🧪 Testing with CMD Consumers
+## 🧪 Testing with browser
 - Local: Open Browser, https://localhost:8080/login.html
 - Prod : Open Browser, https://chat-app.onrender.com/login.html
 
