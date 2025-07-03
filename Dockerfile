@@ -19,5 +19,6 @@ WORKDIR /app
 COPY --from=builder /app/target/*.jar app.jar
 
 ENV SPRING_PROFILES_ACTIVE=prod
-RUN echo "Active profile: $SPRING_PROFILES_ACTIVE"
+ENV SPRING_CONFIG_LOCATION=classpath:/application-prod.properties
+
 ENTRYPOINT ["java", "-jar", "app.jar", "--spring.profiles.active=prod"]
