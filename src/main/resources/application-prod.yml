@@ -26,7 +26,7 @@ spring:
 
   data:
     mongodb:
-      uri: ${db.nosql.uri}
+      uri: mongodb://mongodb.railway.internal:27017/chatapp
       auto-index-creation: true
       uuid-representation: java-legacy
 
