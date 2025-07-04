@@ -145,7 +145,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ phoneNumber: phone, agent: getSimpleAgent() + ", " + getSimpleOS(), deviceId: deviceId})
-            });
+            }, false);
 
             const data = await res.json();
             if (res.ok) {
@@ -180,7 +180,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({sessionId: sessionId, otp: otp, agent: getSimpleAgent() + ", " + getSimpleOS(), deviceId: deviceId })
-            });
+            }, false);
 
             const data = await res.json();
             if (res.ok) {
@@ -193,8 +193,6 @@
                     console.debug("verifyOTP sessionId:", data.sessionId);
                     initiateRegister();
                 }
-            } else if (res.status === 401) {
-                throw new Error(JSON.stringify(data));
             } else {
                 showError(data.message || "OTP verification failed");
             }
@@ -239,9 +237,9 @@
             }
         } catch (err) {
             showError("Error: " + err.message);
+            AuthService.removeItem(AuthConstants.STORAGE_KEYS.SESSION_ID);
+            showCustomAlert("Register failed, so refresh to start again.", 10000);
         }
-        AuthService.removeItem(AuthConstants.STORAGE_KEYS.SESSION_ID);
-        showCustomAlert("Register failed, so refresh to start again.", 10000);
         hideProgressBar();
     }
 

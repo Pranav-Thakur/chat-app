@@ -140,6 +140,7 @@
         if (phone && phone.match(/^\d{10}$/)) {
             let userId = AuthService.getItemWithExpiry(AuthConstants.STORAGE_KEYS.USER_ID);
             const res = await AuthService.apiFetch(AuthConstants.API.FIND.replace("{userId}", userId) + "?phone=" + phone);
+            const peerUser = await res.json();
 
             if (!res.ok) {
                 console.log("Data: " + peerUser);
@@ -147,7 +148,6 @@
                 return;
             }
 
-            const peerUser = await res.json();
             AuthService.setItemWithExpiry(AuthConstants.STORAGE_KEYS.PEER_ID, peerUser.userId);
             AuthService.setItemWithExpiry(AuthConstants.STORAGE_KEYS.PEER_USER_DATA, JSON.stringify(peerUser));
 

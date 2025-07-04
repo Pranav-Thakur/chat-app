@@ -20,7 +20,6 @@ public class ChatAppApplication {
     }
 
     public static void main(String[] args) {
-        System.out.println(">>>>> Runtime active args: " + Arrays.toString(args));
         SpringApplication.run(ChatAppApplication.class, args);
     }
 }

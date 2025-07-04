@@ -47,8 +47,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                         return super.determineUser(request, wsHandler, attributes);
                     }
                 })
-                .setAllowedOrigins("https://localhost:8080", "https://chat-app.onrender.com");
-        // for prod .setAllowedOrigins("http://yourdomain.com");
+                .setAllowedOrigins("https://localhost:8080", "https://chat-app-production-e971.up.railway.app");
     }
 
     public TaskScheduler messageBrokerTaskScheduler() {
