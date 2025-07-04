@@ -44,6 +44,8 @@ chatapp:
     length: 6
     expiry:
       millis: 900000
+    verify:
+      maxtry: 3
   chatid:
     suffix:
       length: 3
@@ -56,9 +58,6 @@ chatapp:
   cookie:
     maxage:
       seconds: 604800
-  otp:
-    verify:
-      maxtry: 3
   user:
     active:
       session: 3
