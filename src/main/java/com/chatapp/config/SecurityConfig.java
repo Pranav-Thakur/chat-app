@@ -68,7 +68,7 @@ public class SecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("https://localhost:8080", "https://chat-app.onrender.com", "https://chat-app-production-0ca1.up.railway.app")
+                        .allowedOrigins("https://localhost:8080", "https://chat-app-production-e971.up.railway.app")
                         .allowedMethods("GET", "POST", "PUT", "DELETE")
                         .allowedHeaders("*")
                         .allowCredentials(true); // ✅ must be true for cookie auth
