@@ -23,4 +23,4 @@ jobs:
       - name: Deploy with Railway
         run: railway up --service chatapp
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_CHATAPP_TOKEN }}
