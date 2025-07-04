@@ -117,7 +117,7 @@
 <div id="progressContainer"><div id="progressBar"></div></div>
 
 <div class="container">
-    <h3>Login to ProChat</h3>
+    <h3 id="titleUI">Login to ChatApp</h3>
 
     <input type="text" id="phone" placeholder="📱 Enter Phone Number" />
     <button id="firstButton" onclick="sendOTP()">Send OTP</button>
@@ -158,8 +158,7 @@
                 AuthService.setItemWithExpiry(AuthConstants.STORAGE_KEYS.SESSION_ID, sessionId, AuthConstants.TTL.SESSION_TOKEN);
 
                 showMessage(data.message);
-                document.getElementById("phone").hidden = true;
-                document.getElementById("firstButton").hidden = true;
+                validateOtpFlowUI();
             } else {
                 showError(data.message || "Failed to send OTP");
             }
@@ -200,14 +199,10 @@
                 showError(data.message || "OTP verification failed");
             }
         } catch (err) {
-            showError("Error: " + err.message);
+            showError("Error: " + err);
             AuthService.removeItem(AuthConstants.STORAGE_KEYS.SESSION_ID);
-            setTimeout(() => {
-                document.getElementById("phone").hidden = true;
-                document.getElementById("firstButton").hidden = true;
-                showError("");
-                alert("try getting otp again.");
-            }, 3000); // 5 seconds delay
+            generateOtpFlowUI();
+            alert("try getting otp again.");
         }
         hideProgressBar();
     }
@@ -252,23 +247,24 @@
 
     function initiateRegister() {
         try {
+            document.getElementById("titleUI").innerText = "Register to ChatApp";
             document.getElementById("firstButton").hidden = true;
 
             const emailEle = document.getElementById("phone");
             emailEle.hidden = false;
             emailEle.value = '';
-            emailEle.placeholder = '✉️ Enter user email';
+            emailEle.placeholder = '✉️ Enter your email';
 
             const nameEle = document.getElementById("otp");
             nameEle.hidden = false;
             nameEle.value = '';
-            nameEle.placeholder = 'Enter user name';
+            nameEle.placeholder = 'Enter your name';
 
             const aboutEle = document.getElementById("agent");
             aboutEle.type = 'text';
             aboutEle.hidden = false;
             nameEle.value = '';
-            aboutEle.placeholder = 'Enter user\'s about';
+            aboutEle.placeholder = 'Enter your\'s about';
 
             document.getElementById("secondButton").innerHTML = 'Register';
             document.getElementById("secondButton").onclick = callRegister;
@@ -276,6 +272,22 @@
             showError("Error: " + err.message);
         }
     }
+
+    function generateOtpFlowUI() {
+        document.getElementById("titleUI").innerText = "Login to ChatApp";
+        document.getElementById("phone").hidden = false;
+        document.getElementById("firstButton").hidden = false;
+        document.getElementById("otp").hidden = true;
+        document.getElementById("secondButton").hidden = true;
+    }
+
+    function validateOtpFlowUI() {
+        document.getElementById("phone").hidden = true;
+        document.getElementById("firstButton").hidden = true;
+        document.getElementById("otp").hidden = false;
+        document.getElementById("secondButton").hidden = false;
+    }
+
 
     function showMessage(msg) {
         document.getElementById("msg").textContent = msg;
@@ -345,6 +357,7 @@
     window.onload = async () => {
         showProgressBar();
         try {
+            generateOtpFlowUI();
             let userId = AuthService.getItemWithExpiry(AuthConstants.STORAGE_KEYS.USER_ID);
             await callApiCheckSessionForValidity(userId);
         } catch (e) {
