@@ -21,6 +21,6 @@ jobs:
         run: npm install -g @railway/cli
 
       - name: Deploy with Railway
-        run: railway up --service chatapp
+        run: railway up --service chat-app
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_CHATAPP_TOKEN }}
