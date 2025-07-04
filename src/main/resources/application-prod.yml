@@ -26,7 +26,7 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://mongo:YtsbPAEZDFVbGaiBmgLLUsiKdVvUfclg@trolley.proxy.rlwy.net:46265/chatapp
+      uri: ${db.nosql.uri}
       auto-index-creation: true
       uuid-representation: java-legacy
 
