@@ -29,6 +29,12 @@ public class UserHistoryChatsResponse {
     @Schema(description = "timestamp of last message", required = true, example = "1234567890322")
     private long timestamp;
 
+    @Schema(description = "timestamp of last message", required = true, example = "1234567890322")
+    private long deliveredTimestamp;
+
+    @Schema(description = "timestamp of last message", required = true, example = "1234567890322")
+    private long readTimestamp;
+
     @Schema(description = "unread messages count", required = true, example = "3")
     private boolean read;
 }

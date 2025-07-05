@@ -38,10 +38,6 @@ public class ChatServiceImpl implements ChatService {
     @Value("${chatapp.chats.default.size}")
     private int chatDefaultSize;
 
-    public List<Message> getChatHistory(String chatId) {
-        return List.of();
-    }
-
     @Override
     public Message saveMessage(@NonNull Message message) {
         UUID senderId = message.getSenderId();
@@ -151,6 +147,7 @@ public class ChatServiceImpl implements ChatService {
             response.add(chatsResponse);
         }
 
+        response.sort(Comparator.comparingLong(UserHistoryChatsResponse::getTimestamp));
         return response;
     }
 
@@ -182,6 +179,8 @@ public class ChatServiceImpl implements ChatService {
 
         chatsResponse.setMessage(chatMessage.getContent());
         chatsResponse.setTimestamp(chatMessage.getTimestamp());
+        chatsResponse.setDeliveredTimestamp(chatMessage.getDeliveredAt());
+        chatsResponse.setReadTimestamp(chatMessage.getReadAt());
         chatsResponse.setRead(chatMessage.isRead());
         return chatsResponse;
     }

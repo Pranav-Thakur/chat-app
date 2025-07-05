@@ -53,7 +53,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests()
                 .antMatchers("/api/**/auth/**").permitAll()
                 .antMatchers("/", "/login.html", "/login", "/chats.html", "/chats", "/chat.html", "/chat", "/health").permitAll()
-                .antMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
+                .antMatchers("/css/**", "/assets/**", "/js/**", "/images/**", "/webjars/**").permitAll()
                 .antMatchers("/api/**/admin/**").hasRole("ADMIN")
                 .antMatchers("/ws/**", "/ws/info/**", "/app/**", "/topic/**").permitAll()
                 .anyRequest().authenticated()
