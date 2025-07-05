@@ -22,6 +22,11 @@ public class ChatMessageRepoServiceImpl implements ChatMessageRepoService {
     }
 
     @Override
+    public ChatMessage getById(@NonNull String id) {
+        return chatMessageRepository.findById(id).orElse(null);
+    }
+
+    @Override
     public List<ChatMessage> getByIds(@NonNull List<String> ids) {
         List<ChatMessage> chatMessages = new ArrayList<>();
         chatMessageRepository.findAllById(ids).forEach(chatMessages::add);

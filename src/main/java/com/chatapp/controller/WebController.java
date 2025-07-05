@@ -18,9 +18,9 @@ public class WebController {
         return "redirect:/chat.html";
     }
 
-    @GetMapping("/dashboard")
-    public String serveDashboard() {
+    @GetMapping("/chats")
+    public String serveChats() {
         // returns chat.html from static/ instead of template/ by thymleaf or JSP
-        return "redirect:/dashboard.html";
+        return "redirect:/chats.html";
     }
 }

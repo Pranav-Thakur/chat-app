@@ -54,7 +54,7 @@ chatapp:
       size: 50
   jwttoken:
     expiry:
-      millis: 7200000
+      millis: 604800000
   cookie:
     maxage:
       seconds: 604800

@@ -23,4 +23,13 @@ public class WebSocketChatController {
         // Then send to specific receiver topic
         messagingTemplate.convertAndSend("/topic/messages/" + message.getReceiverId(), message);
     }
+
+    @MessageMapping("/chat.delivered")
+    public void handleDeliveryAck(@NonNull Message message) {
+        message = chatService.markMessageAsDelivered(message);
+
+        // Optionally notify sender over STOMP
+        //Message message = messageService.getMessageById(ack.getMessageId());
+        //messagingTemplate.convertAndSendToUser(message.getSenderId(), "/queue/message-status", new MessageStatusUpdate(message.getId(), "DELIVERED"));
+    }
 }

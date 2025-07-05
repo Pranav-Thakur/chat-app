@@ -62,7 +62,8 @@ public class ChatServiceImpl implements ChatService {
         }
 
         String chatId = "chat_" + message.getSenderId() + "_" + message.getTimestamp() + "_" + ChatAppUtil.randomOtp(chatIdSuffixLength);
-        ChatMessage newMsg = new ChatMessage(chatId, message.getSenderId().toString(), message.getReceiverId().toString(), message.getContent(), message.getTimestamp(), message.isRead());
+        ChatMessage newMsg = new ChatMessage(chatId, message.getSenderId().toString(), message.getReceiverId().toString(),
+                message.getContent(), message.getTimestamp(), message.getDeliveryTimestamp(), message.getReadTimestamp(), message.isRead());
         newMsg = chatMessageRepoService.save(newMsg);
         message.setMessageId(newMsg.getId());
 
@@ -121,6 +122,10 @@ public class ChatServiceImpl implements ChatService {
 
         List<UserHistoryChatsResponse> response = new ArrayList<>();
         PersonalChats personalChat = personalChatsRepoService.findBySenderIdAndReceiverId(senderId, receiverId);
+        if (personalChat == null) {
+            return response;
+        }
+
         AppUserDO currentUser = appUserRepoService.getAppUserById(userId); // fetch name/phone
         AppUserDO otherUser = appUserRepoService.getAppUserById(otherUserId);
 
@@ -128,12 +133,37 @@ public class ChatServiceImpl implements ChatService {
         if (messages.isEmpty()) return response;
 
         List<ChatMessage> chatMessages = chatMessageRepoService.getByIds(messages);
-        for (ChatMessage chatMessage : chatMessages) {
+        boolean readAlready = false;
+        for (int i = chatMessages.size() - 1; i >= 0; i--) {
+            ChatMessage chatMessage =  chatMessages.get(i);
+            if (!readAlready && chatMessage.isRead()) {
+                readAlready = true;
+            }
+
+            if (readAlready && !chatMessage.isRead()) {
+                chatMessage.setRead(readAlready);
+                if (chatMessage.getDeliveredAt() == 0) chatMessage.setDeliveredAt(chatMessage.getTimestamp());
+                if (chatMessage.getReadAt() == 0) chatMessage.setReadAt(chatMessage.getTimestamp());
+                chatMessage = chatMessageRepoService.save(chatMessage);
+            }
+
             UserHistoryChatsResponse chatsResponse = getUserHistoryChatsResponse(chatMessage, currentUser, otherUser);
             response.add(chatsResponse);
         }
 
         return response;
+    }
+
+    @Override
+    public Message markMessageAsDelivered(@NonNull Message message) {
+        ChatMessage chatMessage = chatMessageRepoService.getById(message.getMessageId());
+        if (chatMessage != null) {
+            chatMessage.setRead(message.isRead());
+            chatMessage.setDeliveredAt(message.getDeliveryTimestamp());
+            chatMessage.setReadAt(message.getReadTimestamp());
+            chatMessage = chatMessageRepoService.save(chatMessage);
+        }
+        return message;
     }
 
     private UserHistoryChatsResponse getUserHistoryChatsResponse(@NonNull ChatMessage chatMessage,

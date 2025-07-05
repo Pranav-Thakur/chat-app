@@ -12,4 +12,5 @@ public interface ChatService {
     Message saveMessage(@NonNull Message message);
     List<UserListChatsResponse> fetchListChats(@NonNull UUID userId);
     List<UserHistoryChatsResponse> fetchListChats(@NonNull UUID currentUserId, @NonNull UUID otherUserId);
+    Message markMessageAsDelivered(@NonNull Message  message);
 }

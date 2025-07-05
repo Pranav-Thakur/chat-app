@@ -1,140 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Chat Dashboard</title>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #e9eff5;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 30px;
-        }
-
-        ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .container {
-            background: white;
-            width: 100%;
-            max-width: 500px;
-            border-radius: 15px;
-            padding: 30px 25px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .header h2 {
-            margin: 0;
-            color: #2c3e50;
-        }
-
-        .chat-list {
-            list-style: none;
-            padding: 0;
-            margin: 20px 0;
-        }
-
-        .chat-item {
-            padding: 15px 20px;
-            margin-bottom: 12px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            border-bottom: 1px solid #ddd;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-            cursor: pointer;
-            align-items: center;
-            justify-content: space-between;
-            display: flex;
-            transition: all 0.2s ease-in-out;
-        }
-
-        .chat-item:hover {
-            background: #dceeff;
-            transform: translateY(-2px);
-        }
-
-        .chat-left {
-            flex-grow: 1;
-        }
-
-        .chat-right {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 40px;
-        }
-
-        .badge {
-            background-color: #dc3545;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .chat-item span {
-            display: block;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-
-        .chat-item small {
-            color: #7f8c8d;
-        }
-
-        #newChatBtn {
-            width: 100%;
-            padding: 12px;
-            margin-top: 20px;
-            background-color: #27ae60;
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        #newChatBtn:hover {
-            background-color: #219150;
-        }
-    </style>
+    <meta charset="UTF-8" />
+    <title>Chats | ChatApp</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <link rel="icon" href="/assets/favicon.png" type="image/png" />
     <script src="/js/auth.js" type="text/javascript"></script>
     <script src="/js/constants.js" type="text/javascript"></script>
 </head>
-<body>
+<body class="bg-gray-100 min-h-screen font-sans flex items-center justify-center">
 
-<div class="container">
-    <div class="header">
-        <h2>Welcome, <span id="username">User</span></h2>
+<div class="w-full max-w-md p-4">
+    <!-- Card Container -->
+    <div class="bg-white rounded-xl shadow-md p-6 relative">
+
+        <!-- Top Buttons Row -->
+        <div class="flex justify-between items-center mb-6 mt-2">
+            <!-- Logout Button -->
+            <button id="logoutBtn"
+                    onclick="AuthService.logoutAndRedirect()"
+                    class="bg-red-600 hover:bg-red-700 text-white p-2 rounded-md shadow-md">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     class="h-5 w-5"
+                     fill="none"
+                     viewBox="0 0 24 24"
+                     stroke="currentColor"
+                     stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
+                </svg>
+            </button>
+
+            <!-- Welcome Title (visually slightly higher) -->
+            <h2 class="text-2xl font-semibold text-center text-gray-800 -mb-2"><span id="username">User</span></h2>
+
+            <!-- New Chat Button -->
+            <button id="newChatBtn"
+                    class="bg-green-600 hover:bg-green-700 text-white text-xl font-bold w-10 h-10 rounded-full shadow-md flex items-center justify-center">
+                +
+            </button>
+        </div>
+
+        <!-- Chat List -->
+        <ul id="chatList" class="space-y-4">
+            <!-- Chat items will be injected here -->
+        </ul>
     </div>
-
-    <ul class="chat-list" id="chatList">
-        <!-- Chat list goes here -->
-    </ul>
-
-    <button id="newChatBtn">+ Start New Chat</button>
 </div>
 
-<script>
+<!-- Optional Custom Alert -->
+<div id="customAlert" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg text-center hidden z-50"></div>
 
+<script>
     document.getElementById("newChatBtn").addEventListener("click", async () => {
         const phone = prompt("Enter 10-digit phone number:");
         if (phone && phone.match(/^\d{10}$/)) {
@@ -190,7 +109,7 @@
             let currentUserData = JSON.parse(stringCurrentUserData);
 
             if(currentUserData && currentUserData.name) {
-                document.getElementById("username").innerHTML = currentUserData.name;
+                document.getElementById("username").innerHTML = currentUserData.name.split(" ")[0];
             }
         } catch (e) {
             console.error("Failed to parse user data", e);
@@ -214,40 +133,65 @@
 
             chats.forEach(chat => {
                 const chatItem = document.createElement("li");
-                chatItem.className = "chat-item";
-                chatItem.innerHTML = `
-                    <div class="chat-left">
-                        <strong>${chat.name}</strong> (${chat.phone})<br>
-                        <span>${chat.lastMessage}</span><br>
-                        <small>${new Date(chat.timestamp).toLocaleString()}</small>
-                    </div>
-                    <div class="chat-right">
-                        ${chat.unreadCount > 0 ? `<span class="badge">${chat.unreadCount}</span>` : ""}
-                    </div>
-                `;
+                chatItem.className = "p-4 bg-gray-50 rounded-lg shadow-sm hover:bg-blue-50 transition";
 
+// Name line
+                const nameEl = document.createElement("p");
+                nameEl.className = "font-semibold text-gray-800";
+                nameEl.textContent = `💬 ${chat.name} (${chat.phone})`;
+                chatItem.appendChild(nameEl);
+
+// Message + Unread badge row
+                const msgRow = document.createElement("div");
+                msgRow.className = "flex justify-between items-center";
+
+// Message
+                const messageEl = document.createElement("span");
+                messageEl.className = "text-sm text-gray-600";
+                messageEl.textContent = chat.lastMessage;
+                msgRow.appendChild(messageEl);
+
+// Badge (only if unread)
+                if (chat.unreadCount > 0) {
+                    const badge = document.createElement("span");
+                    badge.className = "relative top-2 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full ml-2 shrink-0";
+                    badge.textContent = chat.unreadCount;
+                    msgRow.appendChild(badge);
+                }
+
+                chatItem.appendChild(msgRow);
+
+// Timestamp
+                const timeEl = document.createElement("small");
+                timeEl.className = "text-xs text-gray-500 block mt-1";
+                timeEl.textContent = new Date(chat.timestamp).toLocaleString();
+                chatItem.appendChild(timeEl);
+
+// Click listener
                 chatItem.onclick = async () => {
                     AuthService.setItemWithExpiry(AuthConstants.STORAGE_KEYS.PEER_ID, chat.userId);
                     let userId = AuthService.getItemWithExpiry(AuthConstants.STORAGE_KEYS.USER_ID);
-                    const res = await AuthService.apiFetch(AuthConstants.API.FIND.replace("{userId}", userId) + "?peerId=" + chat.userId);
+                    const res = await AuthService.apiFetch(
+                        AuthConstants.API.FIND.replace("{userId}", userId) + "?peerId=" + chat.userId
+                    );
                     const peerUser = await res.json();
 
                     if (!res.ok) {
                         console.log("Data: " + peerUser);
-                        // no issues as off now, lazy loading later can happen
                     } else {
                         AuthService.setItemWithExpiry(AuthConstants.STORAGE_KEYS.PEER_USER_DATA, JSON.stringify(peerUser));
                     }
 
                     setTimeout(() => {
                         window.location.href = `/chat.html`;
-                    }, 1000); // 1 second delay
+                    }, 1000);
                 };
 
                 listDiv.appendChild(chatItem);
             });
+
         } catch (e) {
-            console.error("Error in dashboard", e);
+            console.error("Error in chats", e);
         }
     };
 

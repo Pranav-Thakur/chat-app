@@ -47,7 +47,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                         return super.determineUser(request, wsHandler, attributes);
                     }
                 })
-                .setAllowedOrigins("https://localhost:8080", "https://chat-app-production-e971.up.railway.app");
+                .setAllowedOrigins("https://192.168.*", "https://localhost:8080", "https://chat-app-production-e971.up.railway.app");
     }
 
     public TaskScheduler messageBrokerTaskScheduler() {

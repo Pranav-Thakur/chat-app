@@ -11,5 +11,7 @@ public class Message {
     private UUID receiverId;
     private String content;
     private long timestamp;
+    private long deliveryTimestamp;
+    private long readTimestamp;
     private boolean isRead;
 }

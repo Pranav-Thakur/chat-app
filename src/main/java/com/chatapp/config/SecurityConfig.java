@@ -52,7 +52,7 @@ public class SecurityConfig {
                 .formLogin().disable() // 👈 disables default form login too
                 .authorizeHttpRequests()
                 .antMatchers("/api/**/auth/**").permitAll()
-                .antMatchers("/", "/login.html", "/chat.html", "/dashboard.html", "/login", "/chat", "/dashboard", "/health").permitAll()
+                .antMatchers("/", "/login.html", "/login", "/chats.html", "/chats", "/chat.html", "/chat", "/health").permitAll()
                 .antMatchers("/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
                 .antMatchers("/api/**/admin/**").hasRole("ADMIN")
                 .antMatchers("/ws/**", "/ws/info/**", "/app/**", "/topic/**").permitAll()
@@ -81,7 +81,7 @@ public class SecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("https://localhost:8080", "https://chat-app-production-e971.up.railway.app")
+                        .allowedOrigins("https://192.168.*", "https://localhost:8080", "https://chat-app-production-e971.up.railway.app")
                         .allowedMethods("GET", "POST", "PUT", "DELETE")
                         .allowedHeaders("*")
                         .allowCredentials(true); // ✅ must be true for cookie auth
