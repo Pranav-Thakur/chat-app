@@ -1,5 +1,6 @@
 package com.chatapp.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.util.UUID;
@@ -13,5 +14,7 @@ public class Message {
     private long timestamp;
     private long deliveryTimestamp;
     private long readTimestamp;
-    private boolean isRead;
+
+    @JsonProperty("isRead")
+    private boolean read;
 }

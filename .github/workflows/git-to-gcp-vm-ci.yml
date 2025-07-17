@@ -1,0 +1,42 @@
+name: Deploy to GCP VM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'  # or 11 if you're using that
+          distribution: 'temurin'
+
+      - name: Build the jar
+        run: ./mvnw clean package -DskipTests
+
+      - name: Copy jar to VM
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.GCP_HOST }}
+          username: ${{ secrets.GCP_USER }}
+          key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+          source: "target/*.jar"
+          target: "/home/pranavthakur07/chatapp/"
+
+      - name: Restart App on VM
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.GCP_HOST }}
+          username: ${{ secrets.GCP_USER }}
+          key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+          script: |
+            pkill -f 'java -jar' || echo "No app running"
+            nohup java -jar /home/pranavthakur07/chatapp/*.jar > /home/pranavthakur07/chatapp/app.log 2>&1 &

@@ -1,4 +1,4 @@
-create table app_user (
+create table chatapp_user (
                           user_id BINARY(16) not null,
                           created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                           updated_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -15,7 +15,7 @@ create table app_user (
 create index idx_chatapp_user_phone on chatapp_user (phone);
 create index idx_chatapp_user_email on chatapp_user (email);
 
-create table login_user (
+create table chatlogin_user (
                             session_id BINARY(16) not null,
                             created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                             updated_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -29,4 +29,4 @@ create table login_user (
                             primary key (session_id)
 ) engine=InnoDB;
 
-create index idx_login_user_phone on login_user (phone);
+create index idx_chatlogin_user_phone on chatlogin_user (phone);
