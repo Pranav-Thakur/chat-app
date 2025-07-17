@@ -9,6 +9,9 @@ spring:
   application:
     name: chat-app
 
+  config:
+    import: /etc/secrets/secret.properties
+
   h2:
     console:
       enabled: false
